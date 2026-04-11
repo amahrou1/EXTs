@@ -131,7 +131,7 @@ public final class EndpointHttpHandler implements HttpHandler {
         while (srcMatcher.find()) {
             String src = srcMatcher.group(1);
             if (src != null && !src.isEmpty()) {
-                String resolved = resolveUrl(sourceUrl, src);
+                String resolved = UrlResolver.resolve(sourceUrl, src);
                 String normalized = Filter.normalize(resolved);
                 if (!Filter.shouldDrop(normalized, tab.getCustomExcludePattern()) && globalDedup.add(normalized)) {
                     EndpointRecord record = new EndpointRecord(
@@ -186,18 +186,6 @@ public final class EndpointHttpHandler implements HttpHandler {
             return url;
         } catch (Throwable t) {
             return url;
-        }
-    }
-
-    private String resolveUrl(String baseUrl, String relative) {
-        if (relative.startsWith("http://") || relative.startsWith("https://") || relative.startsWith("//")) {
-            return relative;
-        }
-        try {
-            java.net.URI base = new java.net.URI(baseUrl);
-            return base.resolve(relative).toString();
-        } catch (Throwable t) {
-            return relative;
         }
     }
 

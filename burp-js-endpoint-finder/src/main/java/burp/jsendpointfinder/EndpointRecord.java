@@ -12,13 +12,22 @@ public final class EndpointRecord {
     private final String status;
     private final LocalDateTime foundAt;
     private final String context;
+    private final EndpointType type;
+    private volatile boolean seen;
 
     public EndpointRecord(String endpoint, String sourceUrl, String status, LocalDateTime foundAt, String context) {
+        this(endpoint, sourceUrl, status, foundAt, context, EndpointType.compute(endpoint, sourceUrl), false);
+    }
+
+    public EndpointRecord(String endpoint, String sourceUrl, String status, LocalDateTime foundAt, String context,
+                          EndpointType type, boolean seen) {
         this.endpoint = endpoint;
         this.sourceUrl = sourceUrl;
         this.status = status;
         this.foundAt = foundAt;
         this.context = context;
+        this.type = type != null ? type : EndpointType.compute(endpoint, sourceUrl);
+        this.seen = seen;
     }
 
     public String endpoint() {
@@ -43,5 +52,25 @@ public final class EndpointRecord {
 
     public String context() {
         return context;
+    }
+
+    public EndpointType type() {
+        return type;
+    }
+
+    public EndpointType getType() {
+        return type;
+    }
+
+    public boolean seen() {
+        return seen;
+    }
+
+    public void markSeen() {
+        this.seen = true;
+    }
+
+    public void setSeen(boolean seen) {
+        this.seen = seen;
     }
 }
