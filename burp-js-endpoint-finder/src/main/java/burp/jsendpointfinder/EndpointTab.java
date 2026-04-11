@@ -69,7 +69,8 @@ public final class EndpointTab {
         this.scopeCheckbox = new JCheckBox("In-scope only", true);
         this.hideSeenCheckbox = new JCheckBox("Hide seen", false);
         for (EndpointType t : EndpointType.values()) {
-            typeCheckboxes.put(t, new JCheckBox(t.name(), true));
+            boolean defaultChecked = t != EndpointType.FRONTEND_ROUTE;
+            typeCheckboxes.put(t, new JCheckBox(t.name(), defaultChecked));
         }
         this.statusLabel = new JLabel("Total unique endpoints: 0");
 

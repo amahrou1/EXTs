@@ -6,12 +6,39 @@ public enum EndpointType {
     API,
     EXTERNAL,
     STATIC,
-    RELATIVE;
+    RELATIVE,
+    FRONTEND_ROUTE;
 
     private static final String[] API_MARKERS = {
-            "/api/", "/v1/", "/v2/", "/v3/",
-            "/graphql", "/rest/", "/rpc/",
-            "/oauth", "/auth/", "/.well-known/"
+            "/api/",
+            "/api-",
+            "/apis/",
+            "/v1/",
+            "/v2/",
+            "/v3/",
+            "/v4/",
+            "/v5/",
+            "/graphql",
+            "/gql",
+            "/rest/",
+            "/restapi/",
+            "/jsonrpc",
+            "/rpc/",
+            "/oauth",
+            "/oauth2/",
+            "/auth/",
+            "/authorize",
+            "/token",
+            "/sso/",
+            "/saml/",
+            "/.well-known/",
+            "/webhook",
+            "/webhooks/",
+            "/callback",
+            "/internal/",
+            "/admin/api/",
+            "/service/",
+            "/services/"
     };
 
     private static final String[] STATIC_SUFFIXES = {
