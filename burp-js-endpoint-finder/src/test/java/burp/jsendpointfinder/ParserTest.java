@@ -126,4 +126,47 @@ class ParserTest {
         List<String> result = Parser.extract("var t = \"../config/settings\"");
         assertTrue(result.contains("../config/settings"), "Should extract ../config/settings, got: " + result);
     }
+
+    @Test
+    void testBasePrefixJoin() {
+        // Modern minified bundles split API URLs across .concat() calls. The
+        // parser should recognise "/users" near a preceding "/api/v4/rooms/"
+        // base prefix and surface BOTH the base prefix and the joined path.
+        String body = "url:(0,o.Z)(n,\"/api/v4/rooms/\").concat(i,\"/users\")";
+        List<String> result = Parser.extract(body);
+        assertTrue(result.contains("/api/v4/rooms/"),
+                "Should surface the base prefix /api/v4/rooms/, got: " + result);
+        assertTrue(result.contains("/api/v4/rooms/users"),
+                "Should surface the joined path /api/v4/rooms/users, got: " + result);
+    }
+
+    @Test
+    void testFrontendRouteDetection() {
+        // SPA router paths should be tagged as FRONTEND_ROUTE when the
+        // surrounding context contains a hash-route include() check.
+        String body = "case e.includes(\"#/reports/data-storage\"):r=t+\"/reports/data-storage\"";
+        List<Parser.MatchResult> results = Parser.extractWithContext(body, null);
+        Parser.MatchResult hit = null;
+        for (Parser.MatchResult mr : results) {
+            if ("/reports/data-storage".equals(mr.endpoint())) {
+                hit = mr;
+                break;
+            }
+        }
+        assertNotNull(hit, "Should surface /reports/data-storage, got: " + results);
+        assertEquals(EndpointType.FRONTEND_ROUTE, hit.type(),
+                "Should be classified as FRONTEND_ROUTE, got type: " + hit.type());
+    }
+
+    @Test
+    void testNoJoinForLongerPath() {
+        // A 3-segment fragment already looks like a complete path and must
+        // NOT be joined with a nearby base prefix.
+        String body = "var a = \"/api/v4/\"; var b = \"/foo/bar/baz\";";
+        List<String> result = Parser.extract(body);
+        assertTrue(result.contains("/foo/bar/baz"),
+                "Should surface the 3-segment fragment as-is, got: " + result);
+        assertFalse(result.contains("/api/v4/foo/bar/baz"),
+                "Should NOT join a 3-segment fragment, got: " + result);
+    }
 }

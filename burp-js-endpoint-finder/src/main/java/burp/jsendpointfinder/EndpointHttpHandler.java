@@ -150,10 +150,19 @@ public final class EndpointHttpHandler implements HttpHandler {
         List<Parser.MatchResult> results = Parser.extractWithContext(body, tab.getCustomExcludePattern());
         for (Parser.MatchResult mr : results) {
             if (globalDedup.add(mr.endpoint())) {
-                EndpointRecord record = new EndpointRecord(
-                        mr.endpoint(), sourceUrl, statusCode,
-                        LocalDateTime.now(), mr.context()
-                );
+                EndpointRecord record;
+                if (mr.type() != null) {
+                    record = new EndpointRecord(
+                            mr.endpoint(), sourceUrl, statusCode,
+                            LocalDateTime.now(), mr.context(),
+                            mr.type(), false
+                    );
+                } else {
+                    record = new EndpointRecord(
+                            mr.endpoint(), sourceUrl, statusCode,
+                            LocalDateTime.now(), mr.context()
+                    );
+                }
                 tab.addRecord(record);
                 api.logging().logToOutput("[+] " + mr.endpoint() + "  (from " + sourceUrl + ")");
             }

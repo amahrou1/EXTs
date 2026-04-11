@@ -6,7 +6,8 @@ public enum EndpointType {
     API,
     EXTERNAL,
     STATIC,
-    RELATIVE;
+    RELATIVE,
+    FRONTEND_ROUTE;
 
     private static final String[] API_MARKERS = {
             "/api/",
