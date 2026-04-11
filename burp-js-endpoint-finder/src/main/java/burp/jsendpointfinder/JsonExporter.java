@@ -17,7 +17,8 @@ public final class JsonExporter {
             sb.append("    \"source\": ").append(escapeJson(r.sourceUrl())).append(",\n");
             sb.append("    \"status\": ").append(escapeJson(r.status())).append(",\n");
             sb.append("    \"found_at\": ").append(escapeJson(r.foundAtFormatted())).append(",\n");
-            sb.append("    \"context\": ").append(escapeJson(r.context())).append("\n");
+            sb.append("    \"context\": ").append(escapeJson(r.context())).append(",\n");
+            sb.append("    \"type\": ").append(escapeJson(r.type().name())).append("\n");
             sb.append("  }");
             if (i < records.size() - 1) {
                 sb.append(",");

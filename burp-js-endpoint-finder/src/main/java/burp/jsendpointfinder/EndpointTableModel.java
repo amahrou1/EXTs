@@ -6,7 +6,13 @@ import java.util.List;
 
 public final class EndpointTableModel extends AbstractTableModel {
 
-    private static final String[] COLUMNS = {"#", "Endpoint", "Source URL", "Context"};
+    private static final String[] COLUMNS = {"#", "Endpoint", "Source URL", "Type", "Context"};
+
+    public static final int COL_INDEX = 0;
+    public static final int COL_ENDPOINT = 1;
+    public static final int COL_SOURCE = 2;
+    public static final int COL_TYPE = 3;
+    public static final int COL_CONTEXT = 4;
 
     private final List<EndpointRecord> records = new ArrayList<>();
 
@@ -27,7 +33,7 @@ public final class EndpointTableModel extends AbstractTableModel {
 
     @Override
     public Class<?> getColumnClass(int columnIndex) {
-        if (columnIndex == 0) {
+        if (columnIndex == COL_INDEX) {
             return Integer.class;
         }
         return String.class;
@@ -37,10 +43,11 @@ public final class EndpointTableModel extends AbstractTableModel {
     public Object getValueAt(int rowIndex, int columnIndex) {
         EndpointRecord rec = records.get(rowIndex);
         return switch (columnIndex) {
-            case 0 -> rowIndex + 1;
-            case 1 -> rec.endpoint();
-            case 2 -> rec.sourceUrl();
-            case 3 -> rec.context();
+            case COL_INDEX -> rowIndex + 1;
+            case COL_ENDPOINT -> rec.endpoint();
+            case COL_SOURCE -> rec.sourceUrl();
+            case COL_TYPE -> rec.type().name();
+            case COL_CONTEXT -> rec.context();
             default -> "";
         };
     }
@@ -57,6 +64,16 @@ public final class EndpointTableModel extends AbstractTableModel {
 
     public List<EndpointRecord> getAllRecords() {
         return new ArrayList<>(records);
+    }
+
+    public void markAllSeen() {
+        if (records.isEmpty()) {
+            return;
+        }
+        for (EndpointRecord r : records) {
+            r.markSeen();
+        }
+        fireTableRowsUpdated(0, records.size() - 1);
     }
 
     public void clear() {
