@@ -15,15 +15,9 @@ class ParserTest {
     }
 
     @Test
-    void testFullUrlDropped() {
+    void testFullUrlWithAxios() {
         List<String> result = Parser.extract("axios.get(\"https://api.example.com/v2/data\")");
-        assertTrue(result.isEmpty(), "Should drop full URLs, got: " + result);
-    }
-
-    @Test
-    void testProtocolRelativeUrlDropped() {
-        List<String> result = Parser.extract("var x = \"//cdn.example.com/lib.js\"");
-        assertTrue(result.isEmpty(), "Should drop protocol-relative URLs, got: " + result);
+        assertTrue(result.contains("https://api.example.com/v2/data"), "Should extract full URL, got: " + result);
     }
 
     @Test
@@ -45,21 +39,9 @@ class ParserTest {
     }
 
     @Test
-    void testVideoExtensionFiltered() {
-        List<String> result = Parser.extract("\"/media/intro.mp4\"");
-        assertTrue(result.isEmpty(), "Should filter .mp4, got: " + result);
-    }
-
-    @Test
-    void testImageExtensionFiltered() {
-        List<String> result = Parser.extract("\"/images/banner.webp\"");
-        assertTrue(result.isEmpty(), "Should filter .webp, got: " + result);
-    }
-
-    @Test
     void testNoiseHostFiltered() {
         List<String> result = Parser.extract("\"https://w3.org\"");
-        assertTrue(result.isEmpty(), "Should filter full URL, got: " + result);
+        assertTrue(result.isEmpty(), "Should filter noise host w3.org, got: " + result);
     }
 
     @Test
@@ -102,7 +84,7 @@ class ParserTest {
                 //# sourceMappingURL=bundle.js.map
                 """;
         List<String> result = Parser.extract(body);
-        assertFalse(result.contains("https://api.example.com/v1/users"), "Should drop full URLs");
+        assertTrue(result.contains("https://api.example.com/v1/users"));
         assertTrue(result.contains("/graphql"));
         assertTrue(result.contains("settings/app.json"));
         assertTrue(result.contains("bundle.js.map"));
@@ -121,32 +103,27 @@ class ParserTest {
     }
 
     @Test
+    void testNoiseHostWithPathNotFiltered() {
+        List<String> result = Parser.extract("\"https://fonts.googleapis.com/css2?family=Roboto\"");
+        assertTrue(result.contains("https://fonts.googleapis.com/css2?family=Roboto"),
+                "Should NOT filter noise host with a non-trivial path, got: " + result);
+    }
+
+    @Test
     void testCssExtensionFiltered() {
         List<String> result = Parser.extract("\"/styles/main.css\"");
         assertTrue(result.isEmpty(), "Should filter .css files, got: " + result);
     }
 
     @Test
-    void testDotSlashDropped() {
+    void testRelativePathWithDotSlash() {
         List<String> result = Parser.extract("import x from \"./utils/helper\"");
-        assertTrue(result.isEmpty(), "Should drop ./ paths, got: " + result);
+        assertTrue(result.contains("./utils/helper"), "Should extract ./utils/helper, got: " + result);
     }
 
     @Test
-    void testDotDotSlashKept() {
+    void testRelativePathWithDotDotSlash() {
         List<String> result = Parser.extract("var t = \"../config/settings\"");
-        assertTrue(result.contains("../config/settings"), "Should keep ../ paths, got: " + result);
-    }
-
-    @Test
-    void testMovFiltered() {
-        List<String> result = Parser.extract("\"/videos/clip.mov\"");
-        assertTrue(result.isEmpty(), "Should filter .mov, got: " + result);
-    }
-
-    @Test
-    void testAviFiltered() {
-        List<String> result = Parser.extract("\"/videos/clip.avi\"");
-        assertTrue(result.isEmpty(), "Should filter .avi, got: " + result);
+        assertTrue(result.contains("../config/settings"), "Should extract ../config/settings, got: " + result);
     }
 }

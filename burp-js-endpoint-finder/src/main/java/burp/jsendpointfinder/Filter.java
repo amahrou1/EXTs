@@ -7,12 +7,9 @@ import java.util.regex.Pattern;
 public final class Filter {
 
     public static final Set<String> STATIC_ASSET_EXTENSIONS = Set.of(
-            ".css", ".png", ".jpg", ".jpeg", ".gif", ".svg", ".bmp", ".tiff", ".tif",
-            ".ico", ".webp", ".avif", ".heic", ".heif",
-            ".mp4", ".mp3", ".avi", ".mov", ".wmv", ".flv", ".mkv", ".webm",
-            ".ogg", ".wav", ".m4a", ".m4v",
-            ".woff", ".woff2", ".ttf", ".eot", ".otf",
-            ".map"
+            ".css", ".png", ".jpg", ".jpeg", ".gif", ".svg",
+            ".woff", ".woff2", ".ttf", ".ico", ".map",
+            ".mp4", ".webp", ".eot", ".otf"
     );
 
     public static final Set<String> NOISE_HOSTS = Set.of(
@@ -31,14 +28,6 @@ public final class Filter {
 
     public static boolean shouldDrop(String endpoint, Pattern customExclude) {
         if (endpoint == null || endpoint.length() < MIN_LENGTH) {
-            return true;
-        }
-
-        if (endpoint.contains("://") || endpoint.startsWith("//")) {
-            return true;
-        }
-
-        if (endpoint.startsWith("./")) {
             return true;
         }
 
