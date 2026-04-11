@@ -6,7 +6,7 @@ import java.util.List;
 
 public final class EndpointTableModel extends AbstractTableModel {
 
-    private static final String[] COLUMNS = {"#", "Endpoint", "Source URL", "Status", "Found At", "Context"};
+    private static final String[] COLUMNS = {"#", "Endpoint", "Source URL", "Context"};
 
     private final List<EndpointRecord> records = new ArrayList<>();
 
@@ -40,9 +40,7 @@ public final class EndpointTableModel extends AbstractTableModel {
             case 0 -> rowIndex + 1;
             case 1 -> rec.endpoint();
             case 2 -> rec.sourceUrl();
-            case 3 -> rec.status();
-            case 4 -> rec.foundAtFormatted();
-            case 5 -> rec.context();
+            case 3 -> rec.context();
             default -> "";
         };
     }

@@ -43,8 +43,9 @@ public final class EndpointTab {
         table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         table.getColumnModel().getColumn(0).setMaxWidth(60);
         table.getColumnModel().getColumn(0).setPreferredWidth(40);
-        table.getColumnModel().getColumn(3).setMaxWidth(80);
-        table.getColumnModel().getColumn(3).setPreferredWidth(60);
+        table.getColumnModel().getColumn(1).setPreferredWidth(250);
+        table.getColumnModel().getColumn(2).setPreferredWidth(250);
+        table.getColumnModel().getColumn(3).setPreferredWidth(300);
 
         this.searchField = new JTextField();
         this.excludeField = new JTextField();
@@ -201,12 +202,15 @@ public final class EndpointTab {
         }
         StringBuilder sb = new StringBuilder();
         for (int viewRow : selectedRows) {
-            Object val = table.getValueAt(viewRow, 1);
-            if (val != null) {
+            Object endpoint = table.getValueAt(viewRow, 1);
+            Object source = table.getValueAt(viewRow, 2);
+            if (endpoint != null) {
                 if (sb.length() > 0) {
                     sb.append('\n');
                 }
-                sb.append(val);
+                sb.append(endpoint);
+                sb.append('\t');
+                sb.append(source != null ? source.toString() : "");
             }
         }
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(sb.toString()), null);
