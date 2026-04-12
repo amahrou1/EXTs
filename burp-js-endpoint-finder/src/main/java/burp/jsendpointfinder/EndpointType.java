@@ -9,7 +9,7 @@ public enum EndpointType {
     RELATIVE,
     FRONTEND_ROUTE;
 
-    private static final String[] API_MARKERS = {
+    static final String[] API_MARKERS = {
             "/api/",
             "/api-",
             "/apis/",
