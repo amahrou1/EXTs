@@ -169,4 +169,56 @@ class ParserTest {
         assertFalse(result.contains("/api/v4/foo/bar/baz"),
                 "Should NOT join a 3-segment fragment, got: " + result);
     }
+
+    @Test
+    void testBasePrefixStandaloneNoFragment() {
+        // A base prefix with no joinable fragment nearby should still be
+        // surfaced as its own endpoint.
+        String body = "const BASE = \"/api/v4/rooms/\";";
+        List<String> result = Parser.extract(body);
+        assertTrue(result.contains("/api/v4/rooms/"),
+                "Base prefix should be surfaced standalone, got: " + result);
+    }
+
+    @Test
+    void testDedupAfterJoin() {
+        // Body has "/users" near "/api/v4/rooms/" (joins to "/api/v4/rooms/users")
+        // AND a separate literal "/api/v4/rooms/users". Should produce only one row.
+        String body = "url:(0,o.Z)(n,\"/api/v4/rooms/\").concat(i,\"/users\"); var x = \"/api/v4/rooms/users\";";
+        List<String> result = Parser.extract(body);
+        assertEquals(1, result.stream().filter(e -> e.equals("/api/v4/rooms/users")).count(),
+                "Should deduplicate joined path, got: " + result);
+    }
+
+    @Test
+    void testBasePrefixV1Join() {
+        // The generalized regex should recognise /v1/ as a base prefix,
+        // not just /api/.
+        String body = "url:(0,o.Z)(n,\"/v1/rooms/\").concat(i,\"/users\")";
+        List<String> result = Parser.extract(body);
+        assertTrue(result.contains("/v1/rooms/"),
+                "Should surface the /v1/ base prefix, got: " + result);
+        assertTrue(result.contains("/v1/rooms/users"),
+                "Should join fragment with /v1/ base, got: " + result);
+    }
+
+    @Test
+    void testBasePrefixRestJoin() {
+        // /rest/ is an API marker and should work as a base prefix.
+        String body = "var base = \"/rest/items/\"; var sub = \"/details\";";
+        List<String> result = Parser.extract(body);
+        assertTrue(result.contains("/rest/items/"),
+                "Should surface the /rest/ base prefix, got: " + result);
+        assertTrue(result.contains("/rest/items/details"),
+                "Should join fragment with /rest/ base, got: " + result);
+    }
+
+    @Test
+    void testBasePrefixBacktickQuotes() {
+        // Backtick-quoted base prefixes should be detected.
+        String body = "const url = `/api/v2/config/`; var x = '/items';";
+        List<String> result = Parser.extract(body);
+        assertTrue(result.contains("/api/v2/config/"),
+                "Should surface backtick-quoted base prefix, got: " + result);
+    }
 }

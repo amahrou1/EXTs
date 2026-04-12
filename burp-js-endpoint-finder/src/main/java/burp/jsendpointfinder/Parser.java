@@ -32,13 +32,22 @@ public final class Parser {
     );
 
     /**
-     * Matches a quoted /api/... string literal. Capture group 1 is the path
-     * (without the surrounding quotes). Used by the base-prefix joining pass
-     * in {@link #extractWithContext(String, Pattern)}.
+     * Matches a quoted string literal starting with any API marker.
+     * Capture group 1 is the path (without the surrounding quotes).
+     * Built dynamically from {@link EndpointType#API_MARKERS} so the
+     * two stay in sync. Supports double-quote, single-quote, and backtick.
      */
-    static final Pattern BASE_PREFIX_REGEX = Pattern.compile(
-            "[\"'](/api/[^\"']{1,200})[\"']"
-    );
+    static final Pattern BASE_PREFIX_REGEX;
+    static {
+        StringBuilder alt = new StringBuilder();
+        for (int i = 0; i < EndpointType.API_MARKERS.length; i++) {
+            if (i > 0) alt.append('|');
+            alt.append(Pattern.quote(EndpointType.API_MARKERS[i]));
+        }
+        BASE_PREFIX_REGEX = Pattern.compile(
+                "[\"'`]((?:" + alt + ")[^\"'`]{0,200})[\"'`]"
+        );
+    }
 
     private static final int MAX_JOIN_DISTANCE = 300;
     private static final int MAX_JOIN_SEGMENTS = 2;
@@ -203,7 +212,7 @@ public final class Parser {
         if (!fragment.startsWith("/")) {
             return null;
         }
-        if (fragment.startsWith("/api/")) {
+        if (startsWithAnyMarker(fragment)) {
             return null;
         }
         if (countPathSegments(fragment) > MAX_JOIN_SEGMENTS) {
@@ -267,6 +276,15 @@ public final class Parser {
             }
         }
         return count;
+    }
+
+    private static boolean startsWithAnyMarker(String path) {
+        for (String marker : EndpointType.API_MARKERS) {
+            if (path.startsWith(marker)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean detectFrontendRoute(String body, int matchStart, String endpoint) {
