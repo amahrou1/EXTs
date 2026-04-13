@@ -93,7 +93,9 @@ sudo ./install.sh
 
 * creates `/root/monitor/{data,}`
 * copies `monitor.sh` (0700), `targets.txt` (0600, only if absent),
-  `config.env` (0600, only if absent), and `README.md` (0644)
+  and `README.md` (0644)
+* copies `config.env.example` -> `/root/monitor/config.env` (0600, only if
+  absent — your real webhook URL lives here, never in the repo)
 * runs a tool pre-flight
 * installs the crontab entry
 

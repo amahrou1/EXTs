@@ -35,7 +35,11 @@ fi
 
 echo "[*] Installing config.env (preserving existing) ..."
 if [[ ! -f "${MON_DIR}/config.env" ]]; then
-    install -m 600 "${SRC_DIR}/config.env" "${MON_DIR}/config.env"
+    if [[ ! -f "${SRC_DIR}/config.env.example" ]]; then
+        echo "ERROR: ${SRC_DIR}/config.env.example not found" >&2
+        exit 1
+    fi
+    install -m 600 "${SRC_DIR}/config.env.example" "${MON_DIR}/config.env"
     echo "    -> edit ${MON_DIR}/config.env and set DISCORD_WEBHOOK_URL"
 else
     chmod 600 "${MON_DIR}/config.env"
