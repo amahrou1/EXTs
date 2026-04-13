@@ -1,0 +1,6 @@
+# One root domain per line. Example:
+#   dell.com
+#   fisglobal.com
+# Blank lines and lines starting with '#' are ignored.
+# Add or remove domains at any time; removed domains keep their data in
+# data/<domain>/ on disk in case you re-add them later.

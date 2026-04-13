@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Installer for the subdomain-monitoring + Discord notifier.
+#
+# Copies files into /root/monitor/, sets permissions, and installs a cron
+# entry that runs the monitor every 72 hours. Safe to re-run (idempotent).
+#
+# Usage:
+#   sudo ./install.sh
+# ------------------------------------------------------------------------------
+
+set -Eeuo pipefail
+
+if [[ $EUID -ne 0 ]]; then
+    echo "ERROR: run as root (sudo ./install.sh)" >&2
+    exit 1
+fi
+
+SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MON_DIR="/root/monitor"
+DATA_DIR="${MON_DIR}/data"
+
+echo "[*] Creating ${MON_DIR} ..."
+mkdir -p "$DATA_DIR"
+
+echo "[*] Installing monitor.sh ..."
+install -m 700 "${SRC_DIR}/monitor.sh" "${MON_DIR}/monitor.sh"
+
+echo "[*] Installing targets.txt (preserving existing) ..."
+if [[ ! -f "${MON_DIR}/targets.txt" ]]; then
+    install -m 600 "${SRC_DIR}/targets.txt" "${MON_DIR}/targets.txt"
+else
+    echo "    -> kept existing ${MON_DIR}/targets.txt"
+fi
+
+echo "[*] Installing config.env (preserving existing) ..."
+if [[ ! -f "${MON_DIR}/config.env" ]]; then
+    install -m 600 "${SRC_DIR}/config.env" "${MON_DIR}/config.env"
+    echo "    -> edit ${MON_DIR}/config.env and set DISCORD_WEBHOOK_URL"
+else
+    chmod 600 "${MON_DIR}/config.env"
+    echo "    -> kept existing ${MON_DIR}/config.env (chmod 600 enforced)"
+fi
+
+echo "[*] Installing README.md ..."
+install -m 644 "${SRC_DIR}/README.md" "${MON_DIR}/README.md"
+
+echo "[*] Tool pre-flight (subfinder / amass / assetfinder / findomain / httpx / curl) ..."
+missing=0
+for t in subfinder amass assetfinder findomain httpx curl; do
+    if ! command -v "$t" >/dev/null 2>&1; then
+        echo "    ! missing: $t"
+        missing=1
+    else
+        printf '    ok: %-12s -> %s\n' "$t" "$(command -v "$t")"
+    fi
+done
+if [[ $missing -ne 0 ]]; then
+    echo "[!] Install the missing tools before the first run (see README)."
+fi
+
+echo "[*] Installing cron entry (every 72 hours) ..."
+CRON_LINE="0 3 */3 * * /root/monitor/monitor.sh >/dev/null 2>&1"
+TMP_CRON="$(mktemp)"
+crontab -l 2>/dev/null | grep -v -F '/root/monitor/monitor.sh' > "$TMP_CRON" || true
+echo "$CRON_LINE" >> "$TMP_CRON"
+crontab "$TMP_CRON"
+rm -f "$TMP_CRON"
+echo "    -> $CRON_LINE"
+
+echo ""
+echo "[+] Install complete."
+echo "    Next steps:"
+echo "      1) edit ${MON_DIR}/config.env and set DISCORD_WEBHOOK_URL"
+echo "      2) add root domains, one per line, to ${MON_DIR}/targets.txt"
+echo "      3) first manual run:   ${MON_DIR}/monitor.sh"
+echo "      4) verify cron:        crontab -l"
