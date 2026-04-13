@@ -60,12 +60,22 @@ if [[ $missing -ne 0 ]]; then
 fi
 
 echo "[*] Installing cron entry (every 72 hours) ..."
+# Build a PATH that includes typical go-install locations so cron can find the
+# enumeration binaries (subfinder/amass/assetfinder/httpx frequently live in
+# $GOPATH/bin rather than /usr/local/bin).
+CRON_PATH="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/go/bin"
 CRON_LINE="0 3 */3 * * /root/monitor/monitor.sh >/dev/null 2>&1"
 TMP_CRON="$(mktemp)"
-crontab -l 2>/dev/null | grep -v -F '/root/monitor/monitor.sh' > "$TMP_CRON" || true
+# Strip any prior monitor.sh line AND any prior PATH line we wrote, then rewrite.
+crontab -l 2>/dev/null \
+    | grep -v -F '/root/monitor/monitor.sh' \
+    | grep -v -F '/root/go/bin' \
+    > "$TMP_CRON" || true
+echo "$CRON_PATH" >> "$TMP_CRON"
 echo "$CRON_LINE" >> "$TMP_CRON"
 crontab "$TMP_CRON"
 rm -f "$TMP_CRON"
+echo "    -> $CRON_PATH"
 echo "    -> $CRON_LINE"
 
 echo ""
