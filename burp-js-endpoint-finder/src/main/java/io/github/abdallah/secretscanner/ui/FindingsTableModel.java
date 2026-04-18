@@ -37,7 +37,7 @@ public final class FindingsTableModel extends AbstractTableModel {
         return switch (col) {
             case COL_TIME      -> f.timestampFormatted();
             case COL_RULE      -> f.rule().name();
-            case COL_SEVERITY  -> f.rule().severity().name();
+            case COL_SEVERITY  -> f.effectiveSeverity().name();
             case COL_HOST      -> f.host();
             case COL_URL       -> f.url();
             case COL_MATCH     -> f.matchTruncated();
@@ -48,6 +48,7 @@ public final class FindingsTableModel extends AbstractTableModel {
     }
 
     private String validatedLabel(Finding f) {
+        if (f.isPendingValidation()) return "Validating\u2026";
         return switch (f.validationResult()) {
             case VALID           -> "\u2713 VALID";
             case INVALID         -> "\u2717 INVALID";
@@ -58,11 +59,11 @@ public final class FindingsTableModel extends AbstractTableModel {
         };
     }
 
-    /** Returns true if a new row was added, false if capped. */
     public boolean addFinding(Finding f) {
         if (rows.size() >= MAX_ROWS) {
             capped = true;
             rows.remove(0);
+            fireTableRowsDeleted(0, 0);
         }
         rows.add(f);
         int idx = rows.size() - 1;
@@ -71,6 +72,7 @@ public final class FindingsTableModel extends AbstractTableModel {
     }
 
     public Finding getRow(int modelRow) {
+        if (modelRow < 0 || modelRow >= rows.size()) return null;
         return rows.get(modelRow);
     }
 
@@ -78,9 +80,7 @@ public final class FindingsTableModel extends AbstractTableModel {
         return List.copyOf(rows);
     }
 
-    public boolean isCapped() {
-        return capped;
-    }
+    public boolean isCapped() { return capped; }
 
     public void clear() {
         rows.clear();
@@ -88,9 +88,20 @@ public final class FindingsTableModel extends AbstractTableModel {
         fireTableDataChanged();
     }
 
-    /** Re-fire a row after its validation state changed. */
     public void refreshRow(Finding f) {
         int idx = rows.indexOf(f);
         if (idx >= 0) fireTableRowsUpdated(idx, idx);
+    }
+
+    public void removeFinding(Finding f) {
+        int idx = rows.indexOf(f);
+        if (idx >= 0) {
+            rows.remove(idx);
+            fireTableRowsDeleted(idx, idx);
+        }
+    }
+
+    public void removeFindings(List<Finding> findings) {
+        for (Finding f : findings) removeFinding(f);
     }
 }

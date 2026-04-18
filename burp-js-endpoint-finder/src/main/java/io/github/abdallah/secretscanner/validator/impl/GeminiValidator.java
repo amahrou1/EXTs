@@ -12,6 +12,7 @@ public final class GeminiValidator extends HttpValidator {
         if (status == 200 && resp.body() != null && resp.body().contains("\"models\"")) {
             return ValidationResult.VALID;
         }
+        if (status == 400) return ValidationResult.INVALID;
         return fromStatus(status);
     }
 }

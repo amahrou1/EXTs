@@ -56,7 +56,7 @@
     "severity": "HIGH",
     "entropyMin": 4.3,
     "contextKeywords": ["openai", "gpt", "OPENAI_API_KEY", "Authorization"],
-    "contextRequired": true,
+    "contextRequired": false,
     "stoplist": ["sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"],
     "validator": "openai"
   },

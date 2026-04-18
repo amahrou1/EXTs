@@ -14,7 +14,7 @@ import java.time.Duration;
 abstract class HttpValidator implements Validator {
 
     protected static final HttpClient CLIENT = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(10))
+            .connectTimeout(Duration.ofSeconds(5))
             .followRedirects(HttpClient.Redirect.NORMAL)
             .build();
 
@@ -56,6 +56,7 @@ abstract class HttpValidator implements Validator {
         if (status == 200) return ValidationResult.VALID;
         if (status == 401 || status == 403) return ValidationResult.INVALID;
         if (status == 429) return ValidationResult.RATE_LIMITED;
+        if (status >= 500) return ValidationResult.NETWORK_ERROR;
         return ValidationResult.UNKNOWN;
     }
 }

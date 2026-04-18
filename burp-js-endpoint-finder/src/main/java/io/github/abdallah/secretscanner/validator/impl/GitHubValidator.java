@@ -9,6 +9,7 @@ public final class GitHubValidator extends HttpValidator {
     public ValidationResult validate(String key) throws IOException {
         var resp = get("https://api.github.com/user",
                 "Authorization", "Bearer " + key,
+                "Accept", "application/vnd.github+json",
                 "User-Agent", "BurpSecretScanner/1.0");
         return fromStatus(resp.statusCode());
     }
