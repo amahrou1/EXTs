@@ -24,8 +24,11 @@ public final class Finding {
     private final double entropy;
     private final int bodyOffset;
 
+    private volatile Rule.Severity effectiveSeverity;
     private volatile ValidationResult validationResult = ValidationResult.NOT_CHECKED;
     private volatile Instant validatedAt;
+    private volatile boolean falsePositive;
+    private volatile boolean pendingValidation;
 
     public Finding(Rule rule, String host, String url,
                    String match, String context, double entropy, int bodyOffset) {
@@ -38,6 +41,7 @@ public final class Finding {
         this.context = context;
         this.entropy = entropy;
         this.bodyOffset = bodyOffset;
+        this.effectiveSeverity = rule.severity();
     }
 
     // package-private constructor for deserialization
@@ -53,6 +57,7 @@ public final class Finding {
         this.context = context;
         this.entropy = entropy;
         this.bodyOffset = bodyOffset;
+        this.effectiveSeverity = rule.severity();
         this.validationResult = validationResult;
         this.validatedAt = validatedAt;
     }
@@ -68,12 +73,20 @@ public final class Finding {
     public String context()                     { return context; }
     public double entropy()                     { return entropy; }
     public int bodyOffset()                     { return bodyOffset; }
+    public Rule.Severity effectiveSeverity()     { return effectiveSeverity; }
     public ValidationResult validationResult()  { return validationResult; }
     public Instant validatedAt()                { return validatedAt; }
+    public boolean isFalsePositive()            { return falsePositive; }
+    public boolean isPendingValidation()        { return pendingValidation; }
+
+    public void setEffectiveSeverity(Rule.Severity sev) { this.effectiveSeverity = sev; }
+    public void setFalsePositive(boolean fp)            { this.falsePositive = fp; }
+    public void setPendingValidation(boolean p)         { this.pendingValidation = p; }
 
     public void setValidation(ValidationResult result, Instant when) {
         this.validationResult = result;
         this.validatedAt = when;
+        this.pendingValidation = false;
     }
 
     public static String sha256(String input) {

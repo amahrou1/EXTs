@@ -10,10 +10,16 @@ public final class SlackValidator extends HttpValidator {
         var resp = post("https://slack.com/api/auth.test", "",
                 "Authorization", "Bearer " + key,
                 "Content-Type", "application/json");
-        if (resp.statusCode() == 200 && resp.body() != null
-                && resp.body().contains("\"ok\":true")) {
-            return ValidationResult.VALID;
+        return parseResponse(resp.statusCode(), resp.body());
+    }
+
+    public ValidationResult parseResponse(int statusCode, String body) {
+        if (statusCode == 200) {
+            if (body != null && body.matches("(?s).*\"ok\"\\s*:\\s*true.*")) {
+                return ValidationResult.VALID;
+            }
+            return ValidationResult.INVALID;
         }
-        return resp.statusCode() == 200 ? ValidationResult.INVALID : fromStatus(resp.statusCode());
+        return fromStatus(statusCode);
     }
 }

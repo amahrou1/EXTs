@@ -403,6 +403,171 @@ class ScannerTest {
         assertEquals("slash/end",   RuleLoader.unescapeJson("slash\\/end"));
     }
 
+    // ── v2 audit: extended binary content types ─────────────────────────────
+
+    @Test
+    void wasmIsBinary() {
+        assertTrue(SecretScanner.isBinaryContentType("application/wasm"));
+    }
+
+    @Test
+    void protobufIsBinary() {
+        assertTrue(SecretScanner.isBinaryContentType("application/x-protobuf"));
+    }
+
+    @Test
+    void grpcIsBinary() {
+        assertTrue(SecretScanner.isBinaryContentType("application/grpc"));
+    }
+
+    // ── v2 audit: openai-user-key-legacy no longer requires context ──────────
+
+    @Test
+    void openaiLegacyKeyFiresWithoutContext() {
+        // 48 diverse chars after "sk-" — should fire even without "openai" nearby
+        String sample = tok(" sk-", "aB3dE6gH9jK2mN5pQ8sT1uW4xZ7bC0eF3hI6kL9nO1qR4tUy");
+        assertTrue(scanner.scan(toBytes(sample), "test.local", "/test")
+                .stream().anyMatch(f -> f.rule().id().equals("openai-user-key-legacy")),
+                "openai-user-key-legacy should fire without context (contextRequired=false)");
+    }
+
+    // ── v2 audit: openai legacy must NOT match sk-proj- or sk-ant- ───────────
+
+    @Test
+    void openaiLegacyDoesNotMatchSkProj() {
+        String sample = tok("sk-proj-", "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwx");
+        assertTrue(scanner.scan(toBytes(sample), "test.local", "/test")
+                .stream().noneMatch(f -> f.rule().id().equals("openai-user-key-legacy")),
+                "openai-user-key-legacy must not match sk-proj- keys (length mismatch protects us)");
+    }
+
+    @Test
+    void openaiLegacyDoesNotMatchStripeLive() {
+        String sample = tok("sk_live_", "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwx");
+        assertTrue(scanner.scan(toBytes(sample), "test.local", "/test")
+                .stream().noneMatch(f -> f.rule().id().equals("openai-user-key-legacy")),
+                "openai-user-key-legacy must not match sk_live_ (underscore not hyphen)");
+    }
+
+    // ── v2 audit: DB connection localhost downgrade ───────────────────────────
+
+    @Test
+    void mongodbLocalhostDowngradedToLow() {
+        String sample = "mongodb://admin:secret123@localhost:27017/mydb";
+        List<Finding> findings = scanner.scan(toBytes(sample), "test.local", "/test");
+        assertTrue(findings.stream().anyMatch(f ->
+                f.rule().id().equals("db-connection-mongodb")
+                && f.effectiveSeverity() == Rule.Severity.LOW),
+                "MongoDB connection to localhost should be downgraded to LOW");
+    }
+
+    @Test
+    void postgresProductionStaysCritical() {
+        String sample = "postgresql://admin:secret@db.prod.example.com:5432/app";
+        List<Finding> findings = scanner.scan(toBytes(sample), "test.local", "/test");
+        assertTrue(findings.stream().anyMatch(f ->
+                f.rule().id().equals("db-connection-postgres")
+                && f.effectiveSeverity() == Rule.Severity.CRITICAL),
+                "PostgreSQL connection to production host should stay CRITICAL");
+    }
+
+    @Test
+    void mysqlDotLocalDowngraded() {
+        String sample = "mysql://root:pass@db.local:3306/test";
+        List<Finding> findings = scanner.scan(toBytes(sample), "test.local", "/test");
+        assertTrue(findings.stream().anyMatch(f ->
+                f.rule().id().equals("db-connection-mysql")
+                && f.effectiveSeverity() == Rule.Severity.LOW),
+                "MySQL connection to .local host should be downgraded to LOW");
+    }
+
+    // ── v2 audit: contextual rules positive/negative ─────────────────────────
+
+    @Test
+    void datadogKeyWithContextFires() {
+        String hex32 = "abcdef1234567890abcdef1234567890";
+        String sample = "DD_API_KEY=" + hex32;
+        assertTrue(scanner.scan(toBytes(sample), "test.local", "/test")
+                .stream().anyMatch(f -> f.rule().id().equals("datadog-api-key-contextual")),
+                "datadog-api-key-contextual should fire with DD_API_KEY nearby");
+    }
+
+    @Test
+    void datadogKeyWithoutContextSilent() {
+        String hex32 = "abcdef1234567890abcdef1234567890";
+        assertTrue(scanner.scan(toBytes(hex32), "test.local", "/test")
+                .stream().noneMatch(f -> f.rule().id().equals("datadog-api-key-contextual")),
+                "datadog-api-key-contextual should not fire without context");
+    }
+
+    @Test
+    void algoliaKeyWithContextFires() {
+        String hex32 = "abcdef1234567890abcdef1234567890";
+        String sample = "X-Algolia-API-Key: " + hex32;
+        assertTrue(scanner.scan(toBytes(sample), "test.local", "/test")
+                .stream().anyMatch(f -> f.rule().id().equals("algolia-admin-key-contextual")),
+                "algolia-admin-key-contextual should fire with Algolia header nearby");
+    }
+
+    @Test
+    void algoliaKeyWithoutContextSilent() {
+        String hex32 = "abcdef1234567890abcdef1234567890";
+        assertTrue(scanner.scan(toBytes(hex32), "test.local", "/test")
+                .stream().noneMatch(f -> f.rule().id().equals("algolia-admin-key-contextual")),
+                "algolia-admin-key-contextual should not fire without context");
+    }
+
+    @Test
+    void herokuKeyWithContextFires() {
+        String uuid = "12345678-1234-1234-1234-123456789012";
+        String sample = "HEROKU_API_KEY=" + uuid;
+        assertTrue(scanner.scan(toBytes(sample), "test.local", "/test")
+                .stream().anyMatch(f -> f.rule().id().equals("heroku-api-key")),
+                "heroku-api-key should fire with HEROKU_API_KEY nearby");
+    }
+
+    @Test
+    void herokuKeyWithoutContextSilent() {
+        String uuid = "12345678-1234-1234-1234-123456789012";
+        assertTrue(scanner.scan(toBytes(uuid), "test.local", "/test")
+                .stream().noneMatch(f -> f.rule().id().equals("heroku-api-key")),
+                "heroku-api-key should not fire without context");
+    }
+
+    // ── v2 audit: GCP service account JSON detection ─────────────────────────
+
+    @Test
+    void gcpServiceAccountJsonDetected() {
+        String sample = "{\"type\": \"service_account\", \"project_id\": \"my-project\"}";
+        assertTrue(scanner.scan(toBytes(sample), "test.local", "/test")
+                .stream().anyMatch(f -> f.rule().id().equals("gcp-service-account-json")),
+                "gcp-service-account-json should fire on service account JSON blob");
+    }
+
+    // ── v2 audit: isLocalDbHost edge cases ───────────────────────────────────
+
+    @Test
+    void isLocalDbHostDetectsLoopback() {
+        assertTrue(SecretScanner.isLocalDbHost("mongodb://user:pass@127.0.0.1:27017/db"));
+        assertTrue(SecretScanner.isLocalDbHost("postgres://u:p@localhost/db"));
+        assertTrue(SecretScanner.isLocalDbHost("mysql://u:p@[::1]/db"));
+        assertTrue(SecretScanner.isLocalDbHost("mysql://u:p@0.0.0.0/db"));
+    }
+
+    @Test
+    void isLocalDbHostDetectsLocalSuffixes() {
+        assertTrue(SecretScanner.isLocalDbHost("mongodb://u:p@db.local/x"));
+        assertTrue(SecretScanner.isLocalDbHost("postgres://u:p@dev.test:5432/x"));
+        assertTrue(SecretScanner.isLocalDbHost("mysql://u:p@host.example/x"));
+        assertTrue(SecretScanner.isLocalDbHost("mysql://u:p@host.invalid/x"));
+    }
+
+    @Test
+    void isLocalDbHostRejectsProduction() {
+        assertFalse(SecretScanner.isLocalDbHost("mongodb://u:p@db.prod.company.com/x"));
+        assertFalse(SecretScanner.isLocalDbHost("postgres://u:p@rds.amazonaws.com/x"));
+    }
+
     // ── helpers ───────────────────────────────────────────────────────────────
 
     private void assertRuleHits(String ruleId, String sample) {

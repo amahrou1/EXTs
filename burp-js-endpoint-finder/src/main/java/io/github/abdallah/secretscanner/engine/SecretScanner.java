@@ -2,6 +2,8 @@ package io.github.abdallah.secretscanner.engine;
 
 import io.github.abdallah.secretscanner.model.Finding;
 
+import io.github.abdallah.secretscanner.engine.Rule;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -13,8 +15,11 @@ public final class SecretScanner {
     private static final int MAX_BODY_BYTES   = 5 * 1024 * 1024;
     private static final int CHUNK_SIZE       = 256 * 1024;
     private static final int CHUNK_OVERLAP    = 512;
-    private static final int CONTEXT_WINDOW   = 200; // chars for contextKeywords check
-    private static final int SNIPPET_RADIUS   = 80;  // chars each side for the context snippet
+    private static final int CONTEXT_WINDOW   = 200;
+    private static final int SNIPPET_RADIUS   = 80;
+
+    private static final Set<String> DB_RULE_IDS = Set.of(
+            "db-connection-mongodb", "db-connection-postgres", "db-connection-mysql");
 
     private volatile List<Rule> rules;
     private volatile Set<String> globalStoplist;
@@ -77,7 +82,11 @@ public final class SecretScanner {
 
                     String ctx = buildContext(chunk, matchStart, m.end());
                     double entropy = Entropy.of(match);
-                    out.add(new Finding(rule, host, url, match, ctx, entropy, globalOffset));
+                    Finding finding = new Finding(rule, host, url, match, ctx, entropy, globalOffset);
+                    if (DB_RULE_IDS.contains(rule.id()) && isLocalDbHost(match)) {
+                        finding.setEffectiveSeverity(Rule.Severity.LOW);
+                    }
+                    out.add(finding);
                 }
             } catch (Throwable ignored) {
             }
@@ -112,6 +121,29 @@ public final class SecretScanner {
         return chunk.substring(lo, hi).replaceAll("[\\r\\n]+", " ");
     }
 
+    public static boolean isLocalDbHost(String match) {
+        int at = match.indexOf('@');
+        if (at < 0) return false;
+        String after = match.substring(at + 1);
+        String host;
+        if (after.startsWith("[")) {
+            int close = after.indexOf(']');
+            host = close > 0 ? after.substring(1, close) : "";
+        } else {
+            int end = after.length();
+            for (int i = 0; i < after.length(); i++) {
+                char c = after.charAt(i);
+                if (c == ':' || c == '/' || c == '?' || c == '#') { end = i; break; }
+            }
+            host = after.substring(0, end);
+        }
+        host = host.toLowerCase();
+        return host.equals("localhost") || host.equals("127.0.0.1")
+                || host.equals("::1") || host.equals("0.0.0.0")
+                || host.endsWith(".local") || host.endsWith(".test")
+                || host.endsWith(".example") || host.endsWith(".invalid");
+    }
+
     public static boolean isBinaryContentType(String contentType) {
         if (contentType == null) return false;
         String lower = contentType.toLowerCase();
@@ -123,6 +155,10 @@ public final class SecretScanner {
                 || lower.contains("application/pdf")
                 || lower.contains("application/zip")
                 || lower.contains("application/x-zip")
-                || lower.contains("application/x-rar");
+                || lower.contains("application/x-rar")
+                || lower.contains("application/wasm")
+                || lower.contains("application/x-font")
+                || lower.contains("application/x-protobuf")
+                || lower.contains("application/grpc");
     }
 }
