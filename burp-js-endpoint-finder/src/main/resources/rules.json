@@ -1,0 +1,386 @@
+[
+  {
+    "id": "anthropic-api-key",
+    "name": "Anthropic Claude API Key",
+    "regex": "sk-ant-api03-[A-Za-z0-9_\\-]{80,120}",
+    "severity": "HIGH",
+    "entropyMin": 4.0,
+    "contextKeywords": ["anthropic", "claude", "ANTHROPIC_API_KEY", "x-api-key"],
+    "validator": "anthropic"
+  },
+  {
+    "id": "anthropic-oauth-token",
+    "name": "Anthropic OAuth Token",
+    "regex": "sk-ant-oat01-[A-Za-z0-9_\\-]{80,120}",
+    "severity": "HIGH",
+    "entropyMin": 4.0,
+    "contextKeywords": ["anthropic", "claude"],
+    "validator": "anthropic"
+  },
+  {
+    "id": "anthropic-admin-key",
+    "name": "Anthropic Admin API Key",
+    "regex": "sk-ant-admin[0-9]{2}-[A-Za-z0-9_\\-]{80,120}",
+    "severity": "CRITICAL",
+    "entropyMin": 4.0,
+    "validator": "anthropic"
+  },
+  {
+    "id": "openai-project-key",
+    "name": "OpenAI Project API Key",
+    "regex": "sk-proj-[A-Za-z0-9_\\-]{40,200}",
+    "severity": "HIGH",
+    "entropyMin": 4.0,
+    "validator": "openai"
+  },
+  {
+    "id": "openai-service-account",
+    "name": "OpenAI Service Account Key",
+    "regex": "sk-svcacct-[A-Za-z0-9_\\-]{40,200}",
+    "severity": "HIGH",
+    "entropyMin": 4.0,
+    "validator": "openai"
+  },
+  {
+    "id": "openai-admin-key",
+    "name": "OpenAI Admin Key",
+    "regex": "sk-admin-[A-Za-z0-9_\\-]{40,200}",
+    "severity": "CRITICAL",
+    "entropyMin": 4.0,
+    "validator": "openai"
+  },
+  {
+    "id": "openai-user-key-legacy",
+    "name": "OpenAI Legacy User API Key",
+    "regex": "(?<![A-Za-z0-9_\\-])sk-[A-Za-z0-9]{48}(?![A-Za-z0-9_\\-])",
+    "severity": "HIGH",
+    "entropyMin": 4.3,
+    "contextKeywords": ["openai", "gpt", "OPENAI_API_KEY", "Authorization"],
+    "contextRequired": true,
+    "stoplist": ["sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"],
+    "validator": "openai"
+  },
+  {
+    "id": "google-api-key",
+    "name": "Google / Gemini / Firebase / Maps API Key",
+    "regex": "AIza[0-9A-Za-z_\\-]{35}",
+    "severity": "MEDIUM",
+    "validator": "gemini"
+  },
+  {
+    "id": "huggingface-token",
+    "name": "Hugging Face Access Token",
+    "regex": "hf_[A-Za-z0-9]{34,40}",
+    "severity": "HIGH",
+    "entropyMin": 3.5,
+    "validator": "huggingface"
+  },
+  {
+    "id": "xai-grok-key",
+    "name": "xAI Grok API Key",
+    "regex": "xai-[A-Za-z0-9]{80}",
+    "severity": "HIGH",
+    "entropyMin": 4.0,
+    "validator": "grok"
+  },
+  {
+    "id": "perplexity-key",
+    "name": "Perplexity API Key",
+    "regex": "pplx-[A-Za-z0-9]{48,64}",
+    "severity": "HIGH",
+    "entropyMin": 4.0
+  },
+  {
+    "id": "groq-key",
+    "name": "Groq API Key",
+    "regex": "gsk_[A-Za-z0-9]{52,56}",
+    "severity": "HIGH",
+    "entropyMin": 4.0,
+    "validator": "groq"
+  },
+  {
+    "id": "replicate-token",
+    "name": "Replicate API Token",
+    "regex": "r8_[A-Za-z0-9]{37}",
+    "severity": "HIGH",
+    "entropyMin": 4.0,
+    "validator": "replicate"
+  },
+  {
+    "id": "fireworks-key",
+    "name": "Fireworks AI API Key",
+    "regex": "fw_[A-Za-z0-9]{24,40}",
+    "severity": "HIGH",
+    "entropyMin": 3.8
+  },
+  {
+    "id": "openrouter-key",
+    "name": "OpenRouter API Key",
+    "regex": "sk-or-v1-[a-f0-9]{64}",
+    "severity": "HIGH",
+    "entropyMin": 3.5
+  },
+  {
+    "id": "deepseek-key",
+    "name": "DeepSeek API Key",
+    "regex": "(?<![A-Za-z0-9_\\-])sk-[A-Za-z0-9]{32,48}(?![A-Za-z0-9_\\-])",
+    "severity": "HIGH",
+    "entropyMin": 4.0,
+    "contextKeywords": ["deepseek", "DEEPSEEK_API_KEY", "api.deepseek.com"],
+    "contextRequired": true
+  },
+  {
+    "id": "mistral-key-contextual",
+    "name": "Mistral API Key (contextual)",
+    "regex": "[A-Za-z0-9]{32}",
+    "severity": "HIGH",
+    "entropyMin": 4.5,
+    "contextKeywords": ["mistral", "MISTRAL_API_KEY", "api.mistral.ai"],
+    "contextRequired": true
+  },
+  {
+    "id": "cohere-key-contextual",
+    "name": "Cohere API Key (contextual)",
+    "regex": "[A-Za-z0-9]{40}",
+    "severity": "HIGH",
+    "entropyMin": 4.5,
+    "contextKeywords": ["cohere", "COHERE_API_KEY", "api.cohere.ai", "api.cohere.com"],
+    "contextRequired": true
+  },
+  {
+    "id": "together-key-contextual",
+    "name": "Together AI Key (contextual)",
+    "regex": "[a-f0-9]{64}",
+    "severity": "HIGH",
+    "entropyMin": 3.5,
+    "contextKeywords": ["together", "TOGETHER_API_KEY", "api.together.xyz"],
+    "contextRequired": true
+  },
+  {
+    "id": "aws-access-key-id",
+    "name": "AWS Access Key ID",
+    "regex": "(?<![A-Z0-9])(A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(?![A-Z0-9])",
+    "severity": "CRITICAL",
+    "validator": "aws-caller-identity"
+  },
+  {
+    "id": "aws-secret-access-key-contextual",
+    "name": "AWS Secret Access Key (contextual)",
+    "regex": "(?<![A-Za-z0-9/+=])[A-Za-z0-9/+=]{40}(?![A-Za-z0-9/+=])",
+    "severity": "CRITICAL",
+    "entropyMin": 4.5,
+    "contextKeywords": ["aws", "secret", "AWS_SECRET_ACCESS_KEY"],
+    "contextRequired": true
+  },
+  {
+    "id": "github-pat-classic",
+    "name": "GitHub Personal Access Token (classic)",
+    "regex": "ghp_[A-Za-z0-9]{36}",
+    "severity": "CRITICAL",
+    "validator": "github"
+  },
+  {
+    "id": "github-pat-fine-grained",
+    "name": "GitHub Fine-grained PAT",
+    "regex": "github_pat_[A-Za-z0-9_]{82}",
+    "severity": "CRITICAL",
+    "validator": "github"
+  },
+  {
+    "id": "github-oauth",
+    "name": "GitHub OAuth Token",
+    "regex": "gho_[A-Za-z0-9]{36}",
+    "severity": "CRITICAL",
+    "validator": "github"
+  },
+  {
+    "id": "github-app-user-token",
+    "name": "GitHub App User-to-Server Token",
+    "regex": "ghu_[A-Za-z0-9]{36}",
+    "severity": "HIGH"
+  },
+  {
+    "id": "github-app-server-token",
+    "name": "GitHub App Server-to-Server Token",
+    "regex": "ghs_[A-Za-z0-9]{36}",
+    "severity": "CRITICAL"
+  },
+  {
+    "id": "github-refresh-token",
+    "name": "GitHub Refresh Token",
+    "regex": "ghr_[A-Za-z0-9]{36,255}",
+    "severity": "HIGH"
+  },
+  {
+    "id": "slack-bot-token",
+    "name": "Slack Bot Token",
+    "regex": "xoxb-[0-9]{10,13}-[0-9]{10,13}-[A-Za-z0-9]{24,34}",
+    "severity": "CRITICAL",
+    "validator": "slack"
+  },
+  {
+    "id": "slack-user-token",
+    "name": "Slack User Token",
+    "regex": "xoxp-[0-9]{10,13}-[0-9]{10,13}-[0-9]{10,13}-[A-Za-z0-9]{32,34}",
+    "severity": "CRITICAL",
+    "validator": "slack"
+  },
+  {
+    "id": "slack-app-token",
+    "name": "Slack App-Level Token",
+    "regex": "xapp-[0-9]-[A-Z0-9]{11}-[0-9]{12,13}-[A-Za-z0-9]{64}",
+    "severity": "CRITICAL"
+  },
+  {
+    "id": "slack-webhook",
+    "name": "Slack Incoming Webhook",
+    "regex": "https://hooks\\.slack\\.com/services/T[A-Z0-9]{8,12}/B[A-Z0-9]{8,12}/[A-Za-z0-9]{24}",
+    "severity": "HIGH"
+  },
+  {
+    "id": "stripe-secret-live",
+    "name": "Stripe Live Secret Key",
+    "regex": "sk_live_[0-9a-zA-Z]{24,99}",
+    "severity": "CRITICAL",
+    "validator": "stripe"
+  },
+  {
+    "id": "stripe-secret-test",
+    "name": "Stripe Test Secret Key",
+    "regex": "sk_test_[0-9a-zA-Z]{24,99}",
+    "severity": "MEDIUM"
+  },
+  {
+    "id": "stripe-restricted-live",
+    "name": "Stripe Restricted Live Key",
+    "regex": "rk_live_[0-9a-zA-Z]{24,99}",
+    "severity": "HIGH",
+    "validator": "stripe"
+  },
+  {
+    "id": "sendgrid-key",
+    "name": "SendGrid API Key",
+    "regex": "SG\\.[A-Za-z0-9_\\-]{22}\\.[A-Za-z0-9_\\-]{43}",
+    "severity": "HIGH"
+  },
+  {
+    "id": "mailgun-key",
+    "name": "Mailgun API Key",
+    "regex": "key-[a-f0-9]{32}",
+    "severity": "HIGH"
+  },
+  {
+    "id": "mailchimp-key",
+    "name": "Mailchimp API Key",
+    "regex": "[a-f0-9]{32}-us[0-9]{1,2}",
+    "severity": "HIGH"
+  },
+  {
+    "id": "twilio-sid",
+    "name": "Twilio Account SID",
+    "regex": "AC[a-f0-9]{32}",
+    "severity": "MEDIUM"
+  },
+  {
+    "id": "twilio-api-key",
+    "name": "Twilio API Key SID",
+    "regex": "SK[a-f0-9]{32}",
+    "severity": "HIGH"
+  },
+  {
+    "id": "digitalocean-pat",
+    "name": "DigitalOcean Personal Access Token",
+    "regex": "dop_v1_[a-f0-9]{64}",
+    "severity": "CRITICAL"
+  },
+  {
+    "id": "digitalocean-oauth",
+    "name": "DigitalOcean OAuth Token",
+    "regex": "doo_v1_[a-f0-9]{64}",
+    "severity": "CRITICAL"
+  },
+  {
+    "id": "heroku-api-key",
+    "name": "Heroku API Key (contextual)",
+    "regex": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+    "severity": "HIGH",
+    "contextKeywords": ["heroku", "HEROKU_API_KEY"],
+    "contextRequired": true
+  },
+  {
+    "id": "npm-access-token",
+    "name": "npm Access Token",
+    "regex": "npm_[A-Za-z0-9]{36}",
+    "severity": "HIGH"
+  },
+  {
+    "id": "datadog-api-key-contextual",
+    "name": "Datadog API Key (contextual)",
+    "regex": "[a-f0-9]{32}",
+    "severity": "HIGH",
+    "contextKeywords": ["datadog", "DD_API_KEY", "DD_APP_KEY"],
+    "contextRequired": true
+  },
+  {
+    "id": "algolia-admin-key-contextual",
+    "name": "Algolia Admin API Key (contextual)",
+    "regex": "[a-f0-9]{32}",
+    "severity": "HIGH",
+    "contextKeywords": ["algolia", "ALGOLIA_ADMIN_KEY", "X-Algolia-API-Key"],
+    "contextRequired": true
+  },
+  {
+    "id": "jwt-generic",
+    "name": "JSON Web Token",
+    "regex": "eyJ[A-Za-z0-9_\\-]{10,}\\.eyJ[A-Za-z0-9_\\-]{10,}\\.[A-Za-z0-9_\\-]{10,}",
+    "severity": "MEDIUM"
+  },
+  {
+    "id": "private-key-pem",
+    "name": "PEM Private Key Block",
+    "regex": "-----BEGIN (?:RSA|DSA|EC|OPENSSH|PGP|ENCRYPTED) PRIVATE KEY(?: BLOCK)?-----",
+    "severity": "CRITICAL"
+  },
+  {
+    "id": "pkcs8-private-key",
+    "name": "PKCS#8 Private Key",
+    "regex": "-----BEGIN PRIVATE KEY-----",
+    "severity": "CRITICAL"
+  },
+  {
+    "id": "gcp-service-account-json",
+    "name": "GCP Service Account JSON",
+    "regex": "\"type\"\\s*:\\s*\"service_account\"",
+    "severity": "CRITICAL"
+  },
+  {
+    "id": "db-connection-mongodb",
+    "name": "MongoDB Connection String with Credentials",
+    "regex": "mongodb(?:\\+srv)?://[^:\\s]{1,64}:[^@\\s]{1,128}@[A-Za-z0-9.\\-]+",
+    "severity": "CRITICAL"
+  },
+  {
+    "id": "db-connection-postgres",
+    "name": "PostgreSQL Connection String with Credentials",
+    "regex": "postgres(?:ql)?://[^:\\s]{1,64}:[^@\\s]{1,128}@[A-Za-z0-9.\\-]+",
+    "severity": "CRITICAL"
+  },
+  {
+    "id": "db-connection-mysql",
+    "name": "MySQL Connection String with Credentials",
+    "regex": "mysql://[^:\\s]{1,64}:[^@\\s]{1,128}@[A-Za-z0-9.\\-]+",
+    "severity": "CRITICAL"
+  },
+  {
+    "id": "discord-bot-token",
+    "name": "Discord Bot Token",
+    "regex": "[MN][A-Za-z0-9]{23}\\.[A-Za-z0-9\\-_]{6}\\.[A-Za-z0-9\\-_]{27,38}",
+    "severity": "HIGH"
+  },
+  {
+    "id": "discord-webhook",
+    "name": "Discord Webhook",
+    "regex": "https://(?:discord|discordapp)\\.com/api/webhooks/[0-9]{17,20}/[A-Za-z0-9_\\-]{60,68}",
+    "severity": "HIGH"
+  }
+]

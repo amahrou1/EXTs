@@ -3,6 +3,7 @@ package burp.jsendpointfinder;
 import burp.api.montoya.BurpExtension;
 import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.extension.ExtensionUnloadingHandler;
+import io.github.abdallah.secretscanner.SecretScannerExtension;
 
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -95,6 +96,13 @@ public class JsEndpointFinder implements BurpExtension {
         });
 
         api.logging().logToOutput("JS Endpoint Finder loaded — Community Edition compatible");
+
+        // Secret Scanner — independent feature, separate thread pool
+        try {
+            new SecretScannerExtension().initialize(api);
+        } catch (Throwable t) {
+            api.logging().logToError("Secret Scanner failed to initialize: " + t.getMessage());
+        }
     }
 
     private static void shutdown(ExecutorService svc) {
