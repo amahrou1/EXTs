@@ -1,0 +1,3 @@
+# Never commit the real webhook URL. Copy config.env.example to config.env
+# locally and edit that copy instead.
+config.env
